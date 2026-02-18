@@ -15,10 +15,7 @@
 package main
 
 func main() {
-	cli := MakeCommandRegistry(
-		&RunCommand{},
-		&SettingsCommand{},
-	)
+	cli := MakeCommandRegistry(&RunCommand{})
 
 	help := &HelpCommand{cli: cli}
 	cli.commands[help.Name()] = help
