@@ -72,14 +72,20 @@ func (r *RunCommand) Execute(args []string) error {
 
 	log.Println("Running Cloaq")
 
-	tunFD := NewTUN("tun0")
+	tunFD, err := NewTUN("tun0")
+	if err != nil {
+		log.Println()
+		return err
+	}
 
-	AddRoute("2001:db8:1::/64", "eth0")
-	AddRoute("2001:db8:2::/64", "eth1")
+	router := &Router{}
+
+	router.AddRoute("2001:db8:1::/64", "eth0")
+	router.AddRoute("2001:db8:2::/64", "eth1")
 
 	log.Println("IPv6 TUN gateway created")
 
-	CreateIPv6PacketListener(tunFD)
+	router.CreateIPv6PacketListener(tunFD)
 
 	return nil
 }
