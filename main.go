@@ -80,7 +80,7 @@ func runCommand() {
 	}()
 
 	// Initialize router (defined in src/router.go)
-	router := &network.Router{}
+	router := &routing.Router{}
 
 	// Example static routes
 	_ = router.AddRoute("2001:db8:1::/64", "eth0")
