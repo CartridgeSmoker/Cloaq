@@ -45,7 +45,7 @@ func main() {
 	case "run":
 		commands.RunCommand(*port, *peers)
 	case "settings":
-		commands.SettingsCommand()
+		commands.SettingsCommand(os.Args[2:])
 	case "help":
 		commands.HelpCommand()
 	default:

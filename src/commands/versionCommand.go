@@ -20,7 +20,7 @@ func VersionCommand() {
 		}
 	}
 
-	fmt.Printf("Cloaq %s\n", version)
-	fmt.Printf("Go version: %s\n", goVersion)
-	fmt.Printf("Revision:   %s\n", revision)
+	fmt.Printf("cloaq %s\n", version)
+	fmt.Printf("go version: %s\n", goVersion)
+	fmt.Printf("revision:   %s\n", revision)
 }
