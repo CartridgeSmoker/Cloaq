@@ -18,7 +18,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"syscall"
+
+	"golang.org/x/sys/unix"
 )
 
 // Reads packets from Tunnel, FOR NOW it's just logs basic info (IPv4/IPv6)
@@ -30,7 +31,7 @@ func ReadLoop(f *os.File) error {
 	fd := int(f.Fd())
 
 	// Set file descriptor to blocking mode to avoid "not pollable" error in Go runtime
-	err := syscall.SetNonblock(fd, false)
+	err := unix.SetNonblock(fd, false)
 	if err != nil {
 		return fmt.Errorf("failed to set blocking mode: %w", err)
 	}
@@ -42,11 +43,11 @@ func ReadLoop(f *os.File) error {
 
 	for {
 		// Use direct syscall.Read to bypass Go's network poller
-		n, err := syscall.Read(fd, buf)
+		n, err := unix.Read(fd, buf)
 
 		if err != nil {
 			// If the syscall was interrupted by a signal, just retry
-			if err == syscall.EINTR {
+			if err == unix.EINTR {
 				continue
 			}
 			return fmt.Errorf("read error: %w", err)

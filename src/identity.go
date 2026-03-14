@@ -18,6 +18,9 @@ import (
 	"crypto/ecdh"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
+	"log"
+	"os"
 )
 
 type Identity struct {

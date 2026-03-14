@@ -1,30 +1,21 @@
 package commands
 
 import (
-	"bufio"
 	network "cloaq/src"
+	"cloaq/src/config"
 	"cloaq/src/routing"
 	"cloaq/src/tun"
+	_ "cloaq/src/tun/lintun"
+	"os"
 
 	"flag"
 	"fmt"
 	"log"
-	"os"
+
 	"runtime"
-	"strconv"
-	"strings"
+
 	"time"
 )
-
-// imitation of config , in real project it will be yaml file
-type Config struct {
-	IdentityPath string `yaml:"identity_path"`
-	Port         int    `yaml:"port"`
-}
-
-const configFileName = "config.yaml"
-
-var currentConfig = Config{IdentityPath: "./id.key", Port: 8080}
 
 func RunCommand(port int, peers string) {
 	log.Println("starting cloaq...")
@@ -114,31 +105,49 @@ Use "cloaq [command] --help" for more information about a command.
 	fmt.Print(helpText)
 
 }
-
 func SettingsCommand(args []string) {
-	loadConfig()
+
+	currentConfig, err := config.LoadConfig()
+	if err != nil {
+		log.Println("Note: config.yaml not found, using internal defaults")
+	}
 
 	settingsFlags := flag.NewFlagSet("settings", flag.ExitOnError)
+
 	newPath := settingsFlags.String("path", currentConfig.IdentityPath, "Path to the identity file")
-	newPort := settingsFlags.Int("port", currentConfig.Port, "port for the Grpc server")
+	newPort := settingsFlags.Int("port", currentConfig.Port, "Port for the GRPC server")
 
 	if len(args) == 0 {
-		fmt.Printf("Current settings:\n  Path: %s\n  Port: %d\n", currentConfig.IdentityPath, currentConfig.Port)
+		fmt.Printf("сurrent Cloaq Settings:\n")
+		fmt.Printf("  identity Path: %s\n", currentConfig.IdentityPath)
+		fmt.Printf("  server Port:   %d\n", currentConfig.Port)
+		fmt.Println("\nTo update, use: cloaq settings --path [value] --port [value]")
 		return
 	}
 
 	if err := settingsFlags.Parse(args); err != nil {
+		log.Printf("error parsing flags: %v", err)
 		return
 	}
 
-	// updating the strusture
 	currentConfig.IdentityPath = *newPath
 	currentConfig.Port = *newPort
 
-	// saving the config
-	saveConfig()
+	if _, err := os.Stat(currentConfig.IdentityPath); err == nil {
+		err := os.Chmod(currentConfig.IdentityPath, 0600)
+		if err != nil {
+			log.Printf("warning: could not set strict permissions (0600) on %s: %v", currentConfig.IdentityPath, err)
+		} else {
+			log.Printf("security: strict permissions (0600) enforced on %s", currentConfig.IdentityPath)
+		}
+	}
 
-	fmt.Println("Settings updated and saved to config.yaml")
+	err = config.SaveConfig(currentConfig)
+	if err != nil {
+		log.Fatalf("сritical: failed to persist config: %v", err)
+	}
+
+	fmt.Println(" settings updated and saved successfully to config.yaml")
 }
 
 func startMonitor() {
@@ -152,50 +161,4 @@ func startMonitor() {
 			time.Sleep(10 * time.Second)
 		}
 	}()
-}
-
-func saveConfig() {
-
-	content := fmt.Sprintf("identity_path: %s\nport: %d\n",
-		currentConfig.IdentityPath, currentConfig.Port)
-
-	err := os.WriteFile(configFileName, []byte(content), 0644)
-	if err != nil {
-		fmt.Printf("error while reading file %v\n", err)
-	}
-}
-
-func loadConfig() {
-	file, err := os.Open(configFileName)
-	if err != nil {
-		// i
-		currentConfig = Config{IdentityPath: "default/path", Port: 50051}
-		return
-	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-
-		}
-	}(file)
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		parts := strings.Split(line, ":")
-		if len(parts) < 2 {
-			continue
-		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-
-		switch key {
-		case "identity_path":
-			currentConfig.IdentityPath = value
-		case "port":
-			val, _ := strconv.Atoi(value)
-			currentConfig.Port = val
-		}
-	}
 }
