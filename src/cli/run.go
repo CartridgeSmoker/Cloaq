@@ -58,8 +58,10 @@ func (s *Run) Execute(args []string) error {
 	log.Println("reading packets from the vnic...")
 
 	// setting up readloop
+
+	packetChan := make(chan network.Packet, 100)
 	go func() {
-		if err := network.ReadLoop(dev); err != nil {
+		if err := network.ReadLoop(dev, packetChan); err != nil {
 			log.Println("readloop error:", err)
 		}
 	}()

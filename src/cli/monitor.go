@@ -20,15 +20,24 @@ func (h *Monitor) Description() string {
 
 func (h *Monitor) Execute(args []string) error {
 
+	const (
+		ByteToMiB = 1024 * 1024
+		Interval  = 30 * time.Second
+	)
 	go func() {
-		var m runtime.MemStats
 		for {
+			var m runtime.MemStats
 			runtime.ReadMemStats(&m)
 
-			log.Println("[monitor] alloc:", m.Alloc/1024/1024, "mb, sys:", m.Sys/1024/1024, "mb, goroutines:", runtime.NumGoroutine())
+			log.Printf("[monitor] alloc: %d MB, sys: %d MB, goroutines: %d",
+				m.Alloc/ByteToMiB,
+				m.Sys/ByteToMiB,
+				runtime.NumGoroutine(),
+			)
 
-			time.Sleep(10 * time.Second)
+			time.Sleep(Interval)
 		}
 	}()
+
 	return nil
 }

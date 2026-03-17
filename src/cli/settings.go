@@ -40,7 +40,7 @@ func (s *Settings) Execute(args []string) error {
 	// 1. Load the existing configuration or initialize with defaults
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Println("Notice: Configuration file not found, proceeding with default values.")
+		log.Println("notice: Configuration file not found, proceeding with default values.")
 	}
 
 	// 2. Define flags for the settings command
@@ -50,7 +50,7 @@ func (s *Settings) Execute(args []string) error {
 
 	// 3. If no arguments are provided, display current settings and exit
 	if len(args) == 0 {
-		fmt.Printf("Current Node Configuration:\n")
+		fmt.Printf("current Node Configuration:\n")
 		fmt.Printf("  Identity Path: %s\n", cfg.IdentityPath)
 		fmt.Printf("  Server Port:   %d\n", cfg.Port)
 		return nil
@@ -69,9 +69,9 @@ func (s *Settings) Execute(args []string) error {
 	// This satisfies the security requirements for handling sensitive keys.
 	if _, err := os.Stat(cfg.IdentityPath); err == nil {
 		if err := os.Chmod(cfg.IdentityPath, 0600); err != nil {
-			log.Printf("Warning: Failed to enforce 0600 permissions on %s: %v", cfg.IdentityPath, err)
+			log.Printf("warning: Failed to enforce 0600 permissions on %s: %v", cfg.IdentityPath, err)
 		} else {
-			log.Printf("Security: File permissions for %s secured (0600)", cfg.IdentityPath)
+			log.Printf("security: File permissions for %s secured (0600)", cfg.IdentityPath)
 		}
 	}
 
@@ -80,6 +80,6 @@ func (s *Settings) Execute(args []string) error {
 		return fmt.Errorf("failed to persist configuration to config.json: %w", err)
 	}
 
-	fmt.Println("✅ Configuration updated and saved successfully.")
+	fmt.Println("configuration updated and saved successfully.")
 	return nil
 }
