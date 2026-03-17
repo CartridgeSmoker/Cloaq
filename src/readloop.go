@@ -41,7 +41,7 @@ func ReadLoop(device io.ReadCloser, packetChan chan<- Packet) error {
 		n, err := device.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				log.Println("ReadLoop: Device closed, terminating loop.")
+				log.Println("readLoop: Device closed, terminating loop.")
 				return nil
 			}
 			return fmt.Errorf("read error on TUN device: %w", err)

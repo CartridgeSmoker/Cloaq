@@ -51,8 +51,8 @@ func (s *Settings) Execute(args []string) error {
 	// 3. If no arguments are provided, display current settings and exit
 	if len(args) == 0 {
 		fmt.Printf("current Node Configuration:\n")
-		fmt.Printf("  Identity Path: %s\n", cfg.IdentityPath)
-		fmt.Printf("  Server Port:   %d\n", cfg.Port)
+		fmt.Printf("  identity Path: %s\n", cfg.IdentityPath)
+		fmt.Printf("  server Port:   %d\n", cfg.Port)
 		return nil
 	}
 
