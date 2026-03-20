@@ -42,6 +42,8 @@ func main() {
 			cmd.Execute(commandArguments)
 		case *cli.Monitor:
 			cmd.Execute(commandArguments)
+		case *cli.Version:
+			cmd.Execute(commandArguments)
 		default:
 			log.Println("unknown command:", commandName)
 		}
