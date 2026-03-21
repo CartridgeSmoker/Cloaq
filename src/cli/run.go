@@ -47,12 +47,12 @@ func (s *Run) Execute(args []string) error {
         \/                \/    |__|`)
 
 	if os.Geteuid() != 0 {
-		log.Fatal("ERROR: Run as root (sudo) to manage TUN device.")
+		log.Fatal("error: Run as root (sudo) to manage TUN device.")
 	}
 
 	node, err := NewCloaqNode(s.peers)
 	if err != nil {
-		log.Fatal("Node init failed:", err)
+		log.Fatal("node init failed:", err)
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -63,7 +63,7 @@ func (s *Run) Execute(args []string) error {
 		os.Exit(0)
 	}()
 
-	log.Printf("Node %s started on fc00::1", node.ID[:12])
+	log.Printf("node %s started on fc00::1", node.ID[:12])
 
 	packetChan := make(chan network.Packet, 100)
 	node.Run(packetChan)
