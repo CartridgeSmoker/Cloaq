@@ -4,6 +4,7 @@ import (
 	network "cloaq/src"
 	"cloaq/src/monitor"
 	"cloaq/src/tun"
+	"cloaq/src/utils"
 	"encoding/hex"
 	"log"
 	"sync/atomic"
@@ -44,16 +45,16 @@ func NewCloaqNode(peers []string) (*CloaqNode, error) {
 	}, nil
 }
 
-func (n *CloaqNode) Run(packetChan chan network.Packet) {
+func (n *CloaqNode) Run(packetChan chan utils.Packet) {
 
-	network.SafeRuntime("Monitor", func() {
+	utils.SafeRuntime("Monitor", func() {
 		err := n.Metrics.Execute(nil)
 		if err != nil {
 			return
 		}
 	})
 
-	network.SafeRuntime("ReadLoop", func() {
+	utils.SafeRuntime("ReadLoop", func() {
 		err := network.ReadLoop(n.Interface, packetChan)
 		if err != nil {
 			return
@@ -61,13 +62,13 @@ func (n *CloaqNode) Run(packetChan chan network.Packet) {
 	})
 }
 
-func (n *CloaqNode) ProcessPacket(pkt network.Packet) {
+func (n *CloaqNode) ProcessPacket(pkt utils.Packet) {
 	if len(n.Peers) == 0 {
 		return
 	}
 
 	target := n.Peers[0]
-	onionedData := network.Encapsulate(pkt.Data)
+	onionedData := utils.Encapsulate(pkt.Data)
 
 	err := n.Transport.SendTo(target, onionedData)
 	if err == nil {

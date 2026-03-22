@@ -15,13 +15,11 @@
 package cli
 
 import (
-	network "cloaq/src"
+	network "cloaq/src/utils"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
-	"syscall"
-
-	"log"
 )
 
 type Run struct {
@@ -56,9 +54,12 @@ func (s *Run) Execute(args []string) error {
 	}
 
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	signal.Notify(sigChan, os.Interrupt)
+
 	go func() {
 		<-sigChan
+		log.Println("\n[!] signal received, cleaning up...")
 		node.Shutdown()
 		os.Exit(0)
 	}()

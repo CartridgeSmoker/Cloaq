@@ -15,19 +15,20 @@
 package network
 
 import (
+	"cloaq/src/utils"
 	"fmt"
 	"io"
 	"log"
 )
 
 // Reads packets from Tunnel, FOR NOW it's just logs basic info (IPv4/IPv6)
-func ReadLoop(device io.Reader, packetChan chan<- Packet) error {
+func ReadLoop(device io.Reader, packetChan chan<- utils.Packet) error {
 	if device == nil {
-		return fmt.Errorf("TUN device is nil")
+		return fmt.Errorf("tun device is nil")
 	}
 
 	defer close(packetChan)
-	log.Println("ReadLoop: Started.")
+	log.Println("readloop: started.")
 
 	buf := make([]byte, 2048)
 
@@ -41,7 +42,7 @@ func ReadLoop(device io.Reader, packetChan chan<- Packet) error {
 			packetData := make([]byte, n)
 			copy(packetData, buf[:n])
 
-			packetChan <- Packet{
+			packetChan <- utils.Packet{
 				Data:    packetData,
 				Version: buf[0] >> 4,
 			}
