@@ -2,6 +2,7 @@ package cli
 
 import (
 	network "cloaq/src"
+
 	"cloaq/src/monitor"
 	"cloaq/src/tun"
 	"cloaq/src/utils"
@@ -46,7 +47,6 @@ func NewCloaqNode(peers []string) (*CloaqNode, error) {
 }
 
 func (n *CloaqNode) Run(packetChan chan utils.Packet) {
-
 	utils.SafeRuntime("Monitor", func() {
 		err := n.Metrics.Execute(nil)
 		if err != nil {
@@ -68,7 +68,7 @@ func (n *CloaqNode) ProcessPacket(pkt utils.Packet) {
 	}
 
 	target := n.Peers[0]
-	onionedData := utils.Encapsulate(pkt.Data)
+	onionedData, _ := utils.Encapsulate(pkt.Data)
 
 	err := n.Transport.SendTo(target, onionedData)
 	if err == nil {

@@ -3,8 +3,6 @@ package utils
 import (
 	"encoding/binary"
 	"fmt"
-	"log"
-	"runtime/debug"
 )
 
 type Packet struct {
@@ -13,8 +11,10 @@ type Packet struct {
 }
 
 // Encapsulate adds a 4-byte header: [version][type][len_high][len_low]
-func Encapsulate(version uint8, msgType uint8, data []byte) ([]byte, error) {
+func Encapsulate(data []byte) ([]byte, error) {
 	size := len(data)
+	var version byte
+	var msgType byte
 
 	if size > 65535 {
 		return nil, fmt.Errorf("payload too large: %d bytes", size)
@@ -30,17 +30,4 @@ func Encapsulate(version uint8, msgType uint8, data []byte) ([]byte, error) {
 	copy(buf[4:], data)
 
 	return buf, nil
-}
-
-// SafeRuntime prevents goroutine panics from crashing the app
-func SafeRuntime(name string, f func()) {
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Printf("[panic] %s recovered: %v", name, r)
-				log.Printf("[stack] %s trace: %s", name, string(debug.Stack()))
-			}
-		}()
-		f()
-	}()
 }
