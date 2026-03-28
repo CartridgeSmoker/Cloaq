@@ -12,17 +12,24 @@
 // For commercial licensing inquiries or permissions beyond the scope of this
 // license, please create an issue in github.
 
-package network
+
+	package network
 
 import (
+	"cloaq/src/utils"
+	"fmt"
+	"log"
 	"net"
+	"sync/atomic"
 )
 
 type Transport struct {
-	conn *net.UDPConn
+	conn      *net.UDPConn
+	sentBytes uint64
+	key       []byte
 }
 
-func NewTransport(listenAddr string) (*Transport, error) {
+func NewTransport(listenAddr string, key []byte) (*Transport, error) {
 	addr, err := net.ResolveUDPAddr("udp", listenAddr)
 	if err != nil {
 		return nil, err
@@ -35,26 +42,40 @@ func NewTransport(listenAddr string) (*Transport, error) {
 
 	return &Transport{
 		conn: conn,
+		key:  key,
 	}, nil
 }
 
-func (t *Transport) SendTo(dst *net.UDPAddr, data []byte) error {
-	_, err := t.conn.WriteToUDP(data, dst)
-	return err
+func (t *Transport) SendTo(addr string, data []byte) error {
+	udpAddr, err := net.ResolveUDPAddr("udp", addr)
+	if err != nil {
+		return err
+	}
+
+	finalFrame, err := utils.Encapsulate(data, t.key)
+	if err != nil {
+		return err
+	}
+
+	n, err := t.conn.WriteToUDP(finalFrame, udpAddr)
+	if err != nil {
+		return err
+	}
+
+	atomic.AddUint64(&t.sentBytes, uint64(n))
+	return nil
 }
 
 func (t *Transport) Listen(incoming chan<- []byte) {
 	buf := make([]byte, 65535)
-
 	for {
 		n, _, err := t.conn.ReadFromUDP(buf)
 		if err != nil {
 			continue
 		}
-
 		packet := make([]byte, n)
 		copy(packet, buf[:n])
-
 		incoming <- packet
 	}
 }
+
